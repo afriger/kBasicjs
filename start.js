@@ -1,27 +1,44 @@
 var vm = function() {};
 
 var gSourceObj = null;
-var log = console.log;
+var gDebugObj = null;
+//var log = console.log;
+
+var log = function(msg) {
+  console.log(msg);
+  if (gDebugObj) {
+    gDebugObj.value += msg + "\n";
+  }
+};
 
 function ini(sourceObj) {
+  gDebugObj = document.getElementById("consol");
   gSourceObj = sourceObj;
 
   if (gSourceObj != null) {
     //document.write("No Source");
     gSourceObj.value = "A=1, B=3; rerererer yuyu \nPRINT 77\n";
   }
-
-  var program = new kbasic(sourceObj.value);
+}
+function Start() {
+  var program = new kbasic(gSourceObj.value);
   var expressions = program.expressionsOnLine(0);
-  program.tokenize(expressions[0]);
-  log("tokens length:" + program._tokens.length);
-  log(program._tokens.toString());
+  for (var k = 0; k < expressions.length; ++k) {
+    log("[" + k + ". ]" + expressions[k]);
+    program.tokenize(expressions[k]);
+    log("[" + k + ". ]" + program._tokens.toString());
+  }
+}
+function Erase() {
+
+  if (gDebugObj) {
+    gDebugObj.value = "";
+  }
 }
 
 function test() {
   //var expr = "A";
   // var s = new Stream(expr);
-
   // if (s.match(regexIdentifier)) {
   //   var identifier = s.lastMatch[1].toUpperCase() + (s.lastMatch[2] || "");
   //   alert(">" + identifier + "<");
@@ -138,9 +155,9 @@ function Token(text, type) {
 }
 
 function kbasic(source /*string*/) {
-  var a = eval("vm.a=3; vm.b=8;");
-  var r = eval("vm.c= vm.a+vm.b;");
-  alert(r);
+  // var a = eval("vm.a=3; vm.b=8;");
+  // var r = eval("vm.c= vm.a+vm.b;");
+  // alert(r);
   //Constant
   this.REM = ";";
   this.DELIMITER = ",";
@@ -157,7 +174,7 @@ kbasic.prototype.expressionsOnLine = function(k) {
   var str = String(this._lines[k]);
   var pos = str.indexOf(this.REM);
   if (pos > 1) {
-    str = str.substr(0, pos - 1);
+    str = str.substr(0, pos);
   }
   res = str.split(this.DELIMITER);
   log("exppressions: " + res.length);
