@@ -2,55 +2,21 @@ var vm = function() {};
 
 var gSourceObj = null;
 var gDebugObj = null;
-//var log = console.log;
-
-var log = function(msg) {
-  console.log(msg);
-  if (gDebugObj) {
-    gDebugObj.value += msg + "\n";
-  }
-};
-
-function ini(sourceObj) {
-  gDebugObj = document.getElementById("consol");
-  gSourceObj = sourceObj;
-
-  if (gSourceObj != null) {
-    //document.write("No Source");
-    gSourceObj.value = "A=1, B=3; rerererer yuyu \nPRINT 77\n";
-  }
-}
-function Start() {
-  var program = new kbasic(gSourceObj.value);
-  var expressions = program.expressionsOnLine(0);
-  for (var k = 0; k < expressions.length; ++k) {
-    log("[" + k + ". ]" + expressions[k]);
-    program.tokenize(expressions[k]);
-    log("[" + k + ". ]" + program._tokens.toString());
-  }
-}
-function Erase() {
-
-  if (gDebugObj) {
-    gDebugObj.value = "";
-  }
-}
-
-function test() {
-  //var expr = "A";
-  // var s = new Stream(expr);
-  // if (s.match(regexIdentifier)) {
-  //   var identifier = s.lastMatch[1].toUpperCase() + (s.lastMatch[2] || "");
-  //   alert(">" + identifier + "<");
-  // } else {
-  //   alert("zhop");
-  // }
-  //alert(Is.space(expr));
-}
-
+var gOutputObj = null;
 var regexIdentifier = /^([A-Za-z][A-Za-z0-9]?)[A-Za-z0-9]*(\$|%)?/;
-var keywords = /^(IF|THEN|ELSE|FOR|TO|STEP|GOTO|GOSUB|RETURN|NEXT|INPUT|LET|CLS|END|PRINT|DIM|DATA|READ|REM|END|OR|AND|MOD|WHILE|WEND|RANDOMIZE|SYSTEM|KEY|CLEAR)$/i;
-var functions = /^(VAL|STR\$|LEFT\$|RIGHT\$|MID\$|LEN|RND|INT|INSTR|ABS|ASC|CHR\$|SQR|STRING\$|SIN|COS|TAN|TIMER)$/i;
+var regexFunctions = new RegExp(
+  [
+    "^(VAL|STR$|LEFT$|RIGHT$|MID$|LEN|RND|INT",
+    "|INSTR|ABS|ASC|CHR$|SQR|STRING$|SIN|COS|TAN|TIMER)$"
+  ].join("")
+);
+var regexKeywords = new RegExp(
+  [
+    "^(IF|THEN|ELSE|FOR|TO|STEP|GOTO|GOSUB|RETURN|NEXT|INPUT",
+    "|LET|CLS|END|PRINT|DIM|DATA|READ|REM|END|OR|AND|MOD|WHILE",
+    "|WEND|RANDOMIZE|SYSTEM|KEY|CLEAR)$"
+  ].join("")
+);
 
 // Stream API, for parsing source and INPUT entry
 function Stream(string) {
@@ -80,30 +46,6 @@ function Stream(string) {
     return string.length === 0;
   };
 }
-
-var TType = {
-  NUMBER: 1,
-  LOGICAL_OPERATOR: 2,
-  MULT_OPERATOR: 3,
-  KEYWORD: 4,
-  FUNCTION: 5,
-  IDENTIFIER: 6,
-  STRING: 7,
-  MULT_OPERATOR: 8,
-  OPENPAREN: 9,
-  CLOSEPAREN: 10,
-  PLUS_OPERATOR: 11,
-  COMMENT: 12,
-  STATEMENT_DELIMITER: 13,
-  DELIMITER: 14,
-  ASSIGNMENT: 15,
-  RELATIONAL: 16,
-  ENDOFLINE: 17,
-  CHARACTER: 18,
-  ID: 19,
-  ASSIGNMENT_OPERATOR: 20,
-  PRINT_DEBUG: 21
-};
 
 var Is = {
   space: function(c) {
@@ -154,6 +96,63 @@ function Token(text, type) {
   };
 }
 
+
+//var log = console.log;
+
+var log = function(msg) {
+  console.log(msg);
+  if (gDebugObj) {
+    gDebugObj.value += msg + "\n";
+  }
+};
+
+function ini(sourceObj) {
+  gOutputObj = document.getElementById("output");
+  gDebugObj = document.getElementById("consol");
+  gSourceObj = sourceObj;
+  if (gSourceObj != null) {
+    gSourceObj.value = "A=1, B=3; rerererer yuyu \nPRINT 77\n";
+  }
+}
+function Start() {
+  var program = new kbasic(gSourceObj.value);
+  for (var i = 0; i < program._countLines; ++i) {
+    var expressions = program.expressionsOnLine(i);
+    log("["+i+"]" + expressions);
+
+    // for (var k = 0; k < expressions.length; ++k) {
+    //   log("[" + i + "," + k + "]" + expressions[k]);
+    //   program.tokenize(expressions[k]);
+    //   program._tokensLine[program._tokensLine.length] = program._tokens;
+    //   //log("[" + k + ". ]" + program._tokens.toString());
+    //   program._tokens = [];
+    // }
+
+    // for (var k = 0; k < program._tokensLine.length; ++k) {
+    //   log("[" + k + " ]" + program._tokensLine[k]);
+    // }
+  }
+ // program.interpreter();
+}
+function Erase() {
+  if (gDebugObj) {
+    gDebugObj.value = "";
+  }
+}
+
+function test() {
+  //var expr = "A";
+  // var s = new Stream(expr);
+  // if (s.match(regexIdentifier)) {
+  //   var identifier = s.lastMatch[1].toUpperCase() + (s.lastMatch[2] || "");
+  //   alert(">" + identifier + "<");
+  // } else {
+  //   alert("zhop");
+  // }
+  //alert(Is.space(expr));
+}
+
+
 function kbasic(source /*string*/) {
   // var a = eval("vm.a=3; vm.b=8;");
   // var r = eval("vm.c= vm.a+vm.b;");
@@ -161,13 +160,15 @@ function kbasic(source /*string*/) {
   //Constant
   this.REM = ";";
   this.DELIMITER = ",";
+  this._tokensLine = new Array();
   this._tokens = new Array();
   this.addToken = function(t) {
     this._tokens[this._tokens.length] = t;
   };
-
+  source = String(source).trim();
   this._lines = source == null ? null : source.split("\n");
-  log("_lines.length: " + this._lines.length);
+  this._countLines = this._lines.length;
+  log("_lines.length: " + this._countLines);
 } //class kbasic
 
 kbasic.prototype.expressionsOnLine = function(k) {
@@ -180,7 +181,13 @@ kbasic.prototype.expressionsOnLine = function(k) {
   log("exppressions: " + res.length);
   return res;
 };
+kbasic.prototype.interpreter = function() {
+  for (var k = 0; k < this._tokensLine.length; ++k) {
 
+    var t = this._tokensLine[k];
+    log("t "+t+";"+ t.length);
+  }
+};
 kbasic.prototype.tokenize = function(input /*line*/) {
   if (input == null || input.length < 1) {
     return;
@@ -293,7 +300,7 @@ kbasic.prototype.tokenize = function(input /*line*/) {
       }
 
       identifier = input.substring(start, i);
-      r = identifier.match(keywords);
+      r = identifier.match(regexKeywords);
       if (r && r[0]) {
         var n = identifier.toUpperCase();
         if (n === "OR" || n === "AND") {
@@ -304,7 +311,7 @@ kbasic.prototype.tokenize = function(input /*line*/) {
           t = new Token(identifier.toUpperCase(), "KEYWORD");
         }
       } else {
-        r = identifier.match(functions);
+        r = identifier.match(regexFunctions);
         if (r && r[0]) {
           t = new Token(identifier.toUpperCase(), "FUNCTION");
         } else {
@@ -373,7 +380,6 @@ kbasic.prototype.tokenize = function(input /*line*/) {
       continue;
     }
     if (c == "=") {
-      //actually ambiguous, might be equality testing
       i++;
       var t = new Token(c, "ASSIGNMENT");
       this.addToken(t);
