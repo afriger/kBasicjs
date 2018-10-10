@@ -1,13 +1,18 @@
- function VirtualMachine() {
-  this.functions = new Array;
-  this.functions["PRINT"] = function (tok) {
-    gOutputObj.value += eval(tok[1].text) + "\n";
+function VirtualMachine() {
+  this.functions = new Array();
+  this.functions["PRINT"] = function(tok) {
+    var str = ("vm.A"+'='+ "7");
+    eval(str);
+    var s = "vm."+tok[1].text;
+    var r = eval(s);
+    alert(r);
+    //gOutputObj.value +=  + "\n";
   };
-   this.functions["ASSIGNMENT"]=function(tok){
-    var str=  tok[0].text = tok[2];
-     eval(str);
-   }
-};
+  this.functions["ASSIGNMENT"] = function(tok) {
+    // var str = (tok[0].text = tok[2]);
+    // eval(str);
+  };
+}
 var vm = new VirtualMachine();
 
 var gSourceObj = null;
@@ -121,6 +126,10 @@ function Erase() {
 }
 
 function test() {
+  eval("A=1");
+  var r = eval("A");
+  alert(r);
+
   //var expr = "A";
   // var s = new Stream(expr);
   // if (s.match(regexIdentifier)) {
@@ -137,7 +146,7 @@ function ini(sourceObj) {
   gDebugObj = document.getElementById("consol");
   gSourceObj = sourceObj;
   if (gSourceObj != null) {
-    gSourceObj.value = "A=1, B=3; rerererer yuyu \nPRINT 77\n";
+    gSourceObj.value = "A=1, B=3; rerererer yuyu \nPRINT A\n";
   }
 }
 function Start() {
@@ -190,8 +199,7 @@ kbasic.prototype.interpreter = function() {
     var t = this._tokensLine[k];
     for (var i = 0; i < t.length; ++i) {
       log("(" + k + "," + i + ") t " + t[i].text);
-      if(t[i].text=="PRINT")
-        vm.functions[t[0].text](t);
+      if (t[i].text == "PRINT") vm.functions[t[0].text](t);
     }
   }
 
