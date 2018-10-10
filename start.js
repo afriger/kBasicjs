@@ -96,7 +96,6 @@ function Token(text, type) {
   };
 }
 
-
 //var log = console.log;
 
 var log = function(msg) {
@@ -118,21 +117,23 @@ function Start() {
   var program = new kbasic(gSourceObj.value);
   for (var i = 0; i < program._countLines; ++i) {
     var expressions = program.expressionsOnLine(i);
-    log("["+i+"]" + expressions);
+    //log("[" + i + "]" + expressions);
 
-    // for (var k = 0; k < expressions.length; ++k) {
-    //   log("[" + i + "," + k + "]" + expressions[k]);
-    //   program.tokenize(expressions[k]);
-    //   program._tokensLine[program._tokensLine.length] = program._tokens;
-    //   //log("[" + k + ". ]" + program._tokens.toString());
-    //   program._tokens = [];
-    // }
-
-    // for (var k = 0; k < program._tokensLine.length; ++k) {
-    //   log("[" + k + " ]" + program._tokensLine[k]);
-    // }
+    for (var k = 0; k < expressions.length; ++k) {
+      program.tokenize(expressions[k]);
+      var t = program._tokens;
+      program._tokensLine[program._tokensLine.length] = t;
+      //log("[" + k + "]" + t.toString());
+      program._tokens = [];
+    }
   }
- // program.interpreter();
+  for (var k = 0; k < program._tokensLine.length; ++k) {
+    log("Line[" + k + "]" + program._tokensLine[k]);
+  }
+
+
+
+ program.interpreter();
 }
 function Erase() {
   if (gDebugObj) {
@@ -151,7 +152,6 @@ function test() {
   // }
   //alert(Is.space(expr));
 }
-
 
 function kbasic(source /*string*/) {
   // var a = eval("vm.a=3; vm.b=8;");
@@ -183,10 +183,18 @@ kbasic.prototype.expressionsOnLine = function(k) {
 };
 kbasic.prototype.interpreter = function() {
   for (var k = 0; k < this._tokensLine.length; ++k) {
-
-    var t = this._tokensLine[k];
-    log("t "+t+";"+ t.length);
+    var t = this._tokensLine[0];
+    //for(var i=0;i<t.length;++i)
+    //{
+      log("("+k+","+i+") t " + t[0]);
+    //}
+    
   }
+
+  var t =  this._tokensLine[0];
+  log ("oi: " + t[0].text);
+
+
 };
 kbasic.prototype.tokenize = function(input /*line*/) {
   if (input == null || input.length < 1) {
