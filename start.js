@@ -1,4 +1,14 @@
-var vm = function() {};
+ function VirtualMachine() {
+  this.functions = new Array;
+  this.functions["PRINT"] = function (tok) {
+    gOutputObj.value += eval(tok[1].text) + "\n";
+  };
+   this.functions["ASSIGNMENT"]=function(tok){
+    var str=  tok[0].text = tok[2];
+     eval(str);
+   }
+};
+var vm = new VirtualMachine();
 
 var gSourceObj = null;
 var gDebugObj = null;
@@ -104,6 +114,23 @@ var log = function(msg) {
     gDebugObj.value += msg + "\n";
   }
 };
+function Erase() {
+  if (gDebugObj) {
+    gDebugObj.value = "";
+  }
+}
+
+function test() {
+  //var expr = "A";
+  // var s = new Stream(expr);
+  // if (s.match(regexIdentifier)) {
+  //   var identifier = s.lastMatch[1].toUpperCase() + (s.lastMatch[2] || "");
+  //   alert(">" + identifier + "<");
+  // } else {
+  //   alert("zhop");
+  // }
+  //alert(Is.space(expr));
+}
 
 function ini(sourceObj) {
   gOutputObj = document.getElementById("output");
@@ -127,30 +154,8 @@ function Start() {
       program._tokens = [];
     }
   }
-  for (var k = 0; k < program._tokensLine.length; ++k) {
-    log("Line[" + k + "]" + program._tokensLine[k]);
-  }
 
-
-
- program.interpreter();
-}
-function Erase() {
-  if (gDebugObj) {
-    gDebugObj.value = "";
-  }
-}
-
-function test() {
-  //var expr = "A";
-  // var s = new Stream(expr);
-  // if (s.match(regexIdentifier)) {
-  //   var identifier = s.lastMatch[1].toUpperCase() + (s.lastMatch[2] || "");
-  //   alert(">" + identifier + "<");
-  // } else {
-  //   alert("zhop");
-  // }
-  //alert(Is.space(expr));
+  program.interpreter();
 }
 
 function kbasic(source /*string*/) {
@@ -168,7 +173,6 @@ function kbasic(source /*string*/) {
   source = String(source).trim();
   this._lines = source == null ? null : source.split("\n");
   this._countLines = this._lines.length;
-  log("_lines.length: " + this._countLines);
 } //class kbasic
 
 kbasic.prototype.expressionsOnLine = function(k) {
@@ -183,18 +187,16 @@ kbasic.prototype.expressionsOnLine = function(k) {
 };
 kbasic.prototype.interpreter = function() {
   for (var k = 0; k < this._tokensLine.length; ++k) {
-    var t = this._tokensLine[0];
-    //for(var i=0;i<t.length;++i)
-    //{
-      log("("+k+","+i+") t " + t[0]);
-    //}
-    
+    var t = this._tokensLine[k];
+    for (var i = 0; i < t.length; ++i) {
+      log("(" + k + "," + i + ") t " + t[i].text);
+      if(t[i].text=="PRINT")
+        vm.functions[t[0].text](t);
+    }
   }
 
-  var t =  this._tokensLine[0];
-  log ("oi: " + t[0].text);
-
-
+  // var t = this._tokensLine[0];
+  // log("oi: " + t[0].text);
 };
 kbasic.prototype.tokenize = function(input /*line*/) {
   if (input == null || input.length < 1) {
