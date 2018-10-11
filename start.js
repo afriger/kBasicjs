@@ -1,16 +1,16 @@
 function VirtualMachine() {
   this.functions = new Array();
   this.functions["PRINT"] = function(tok) {
-    var str = ("vm.A"+'='+ "7");
-    eval(str);
+    //var str = ("vm.A"+'='+ "7");
+    //eval(str);
     var s = "vm."+tok[1].text;
     var r = eval(s);
     alert(r);
     //gOutputObj.value +=  + "\n";
   };
   this.functions["ASSIGNMENT"] = function(tok) {
-    // var str = (tok[0].text = tok[2]);
-    // eval(str);
+    var str = ("vm."+tok[0].text+"="+ tok[2]);
+    eval(str);
   };
 }
 var vm = new VirtualMachine();
@@ -200,6 +200,7 @@ kbasic.prototype.interpreter = function() {
     for (var i = 0; i < t.length; ++i) {
       log("(" + k + "," + i + ") t " + t[i].text);
       if (t[i].text == "PRINT") vm.functions[t[0].text](t);
+      if (t[i].text == "=") vm.functions["ASSIGNMENT"](t);
     }
   }
 
