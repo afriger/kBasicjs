@@ -9,7 +9,7 @@ function VirtualMachine() {
     //gOutputObj.value +=  + "\n";
   };
   this.functions["ASSIGNMENT"] = function(tok) {
-    var str = ("vm."+tok[0].text+"="+ tok[2]);
+    var str = ("vm."+tok[0].text+"="+ tok[2].text);
     eval(str);
   };
 }
