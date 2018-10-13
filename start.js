@@ -3,16 +3,19 @@ function VirtualMachine() {
   this.functions["PRINT"] = function(tok) {
     //var str = ("vm.A"+'='+ "7");
     //eval(str);
-    var s = "vm."+tok[1].text;
+    var s = "vm." + tok[1].text;
     var r = eval(s);
     alert(r);
     //gOutputObj.value +=  + "\n";
   };
   this.functions["ASSIGNMENT"] = function(tok) {
-    var str = ("vm."+tok[0].text+"="+ tok[2].text);
+    var str = "vm." + tok[0].text + "=" + tok[2].text;
     eval(str);
   };
 }
+
+VirtualMachine.prototype.EvalExpression = function(toks) {};
+
 var vm = new VirtualMachine();
 
 var gSourceObj = null;
@@ -107,6 +110,10 @@ function Token(text, type) {
   };
 
   this.getText = function() {
+    //sasa change to plus "vm."
+    if (type == "IDENTIFIER") {
+      return "vm." + this.text;
+    }
     return this.text;
   };
 }
