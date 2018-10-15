@@ -1,6 +1,3 @@
-
-
-
 function VirtualMachine() {
   this.functions = new Array();
   this.functions["PRINT"] = function(tok) {
@@ -11,7 +8,7 @@ function VirtualMachine() {
   };
   this.functions["ASSIGNMENT"] = function(tok) {
     tok.mode = 0;
-    var r =  vm.EvalExpression(tok);
+    var r = vm.EvalExpression(tok);
     eval(r);
   };
 }
@@ -24,7 +21,7 @@ VirtualMachine.prototype.EvalExpression = function(tok) {
     for (var k = start; k < tok.length; ++k) {
       s += tok[k].getText();
     }
-    log("expr: "+ s); 
+    log("expr: " + s);
     return eval(s);
   }
 };
@@ -45,7 +42,8 @@ var regexKeywords = new RegExp(
   [
     "^(IF|THEN|ELSE|FOR|TO|STEP|GOTO|GOSUB|RETURN|NEXT|INPUT",
     "|LET|CLS|END|PRINT|DIM|DATA|READ|REM|END|OR|AND|MOD|WHILE",
-    "|WEND|RANDOMIZE|SYSTEM|KEY|CLEAR)$"
+    "|WEND|RANDOMIZE|SYSTEM|KEY|CLEAR|STOP",
+    "|GPS|PS|RPS)$"
   ].join("")
 );
 
@@ -145,9 +143,7 @@ function Erase() {
   }
 }
 
-function test() {
-
-}
+function test() {}
 
 function ini(sourceObj) {
   gOutputObj = document.getElementById("output");
@@ -178,7 +174,6 @@ function Start() {
 }
 
 function kbasic(source /*string*/) {
-
   //Constant
   this.REM = ";";
   this.DELIMITER = ",";
@@ -203,15 +198,58 @@ kbasic.prototype.expressionsOnLine = function(k) {
   //log("exppressions: " + res.length);
   return res;
 };
-kbasic.prototype.interpreter = function() {
-  for (var k = 0; k < this._tokensLine.length; ++k) {
+kbasic.prototype.interpreter = function(begin, end) {
+  var start = begin ? begin : 0;
+  var finish = end ? end : this._tokensLine.length;
+
+  for (var k = start; k < finish; ++k) {
     var t = this._tokensLine[k];
-    //log("tok:" + t);
-    for (var i = 0; i < t.length; ++i) {
+    var length = t.length;
+    if (!(length && length > 0)) {
+      continue;
+    }
+    //log("tok:" + t + ":" + k);
+    if (t[0].getType() == "KEYWORD") {
+      if (t[0].getText() == "STOP") {
+        log("End of program");
+        break;
+      }
+      if (t[0].getText() == "GPS") {
+        this.Subroutine(k, t[1].text);
+        continue;
+      }
+    }
+    for (var i = 0; i < length; ++i) {
       log("(" + k + "," + i + ") t " + t[i].getText() + " : " + t[i].getType());
       if (t[i].text == "PRINT") vm.functions["PRINT"](t);
       if (t[i].text == "=") vm.functions["ASSIGNMENT"](t);
     }
   }
+};
 
+kbasic.prototype.Subroutine = function(start, name) {
+  var pEnd = this._tokensLine.length;
+  var begin = 0,
+    end = 0;
+  for (var k = start; k < pEnd; ++k) {
+    var t = this._tokensLine[k];
+    var length = t.length;
+    if (length && length > 0) {
+      if (t[0].getType() == "KEYWORD" && t[0].getText() == "PS") {
+        if (t[1].text == name) {
+          begin = k;
+        }
+      }
+      if (t[0].getType() == "KEYWORD" && t[0].getText() == "RPS") {
+        if (t[1].text == name) {
+          end = k;
+          alert("PS: " + begin + ":" + end);
+        }
+        break;
+      }
+    }
+  }
+  if (begin > 0 && end < pEnd) {
+    this.interpreter(begin, end);
+  }
 };

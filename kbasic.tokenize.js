@@ -8,7 +8,7 @@ kbasic.prototype.tokenize = function(input /*line*/) {
     var c = input[0];
   
     if (input[0] == "S" && Is.space(input[1])) {
-      this._tokens.addToken(new Token("S", TType.PRINT_DEBUG));
+      this._tokens.addToken(new Token("S", "PRINT_DEBUG"));
       i++;
     }
     this.error = false;
