@@ -1,0 +1,1 @@
+var SIN = Math.sin;
