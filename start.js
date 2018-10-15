@@ -54,14 +54,19 @@ var regexIdentifier = /^([A-Za-z][A-Za-z0-9]?)[A-Za-z0-9]*(\$|%)?/;
 var regexFunctions = new RegExp(
   [
     "^(VAL|STR$|LEFT$|RIGHT$|MID$|LEN|RND|INT",
-    "|INSTR|ABS|ASC|CHR$|SQR|STRING$|SIN|COS|TAN|TIMER)$"
+    "|INSTR|ABS|ASC|CHR$|SQR|STRING$|SIN|COS|TAN|TIMER",
+    "|CRT|BOXDRAW|CURSOR|NOMWERT|FILLROW|REVERSE|LINEROW|BLINK",
+    ")$"
   ].join("")
 );
 var regexKeywords = new RegExp(
   [
     "^(IF|THEN|ELSE|FOR|TO|STEP|GOTO|GOSUB|RETURN|NEXT|INPUT",
-    "|LET|CLS|END|PRINT|DIM|DATA|READ|REM|END|OR|AND|MOD|WHILE",
+    "|LET|CLS|END|PRINT|DIM|DATA|READ|END|OR|AND|MOD|WHILE",
     "|WEND|RANDOMIZE|SYSTEM|KEY|CLEAR|STOP",
+    "|INCHES|TKO|SMW|ADF|MS|SPO|NRESX|OHM",
+    "|BSIZE|QRATE|DPIN|HP4|HP5|HP6|HP4",
+    "|HP5|HP6|DEF|PT||ST|SET|RPS|PF|PR|PPOS|GPS|XV|YV|FT",
     "|GPS|PS|RPS)$"
   ].join("")
 );
@@ -151,8 +156,6 @@ function Token(text, type) {
   };
 }
 
-//var log = console.log;
-
 var log = function(msg) {
   console.log(msg);
   if (gDebugObj) {
@@ -187,8 +190,8 @@ function Start() {
       program._tokens = [];
     }
     program._tokensLine[program._tokensLine.length] = new Token(
-      program.ENDL,
-      program.ENDL
+      program._ENDL,
+      program._ENDL
     );
   }
 
@@ -197,9 +200,9 @@ function Start() {
 
 function kbasic(source /*string*/) {
   //Constant
-  this.REM = ";";
-  this.DELIMITER = ",";
-  this.ENDL = "ENDL";
+  this._REM = ";";
+  this._DELIMITER = ",";
+  this._ENDL = "ENDL";
   this._tokensLine = new Array();
   this._tokens = new Array();
   this.addToken = function(t) {
@@ -212,11 +215,11 @@ function kbasic(source /*string*/) {
 
 kbasic.prototype.expressionsOnLine = function(k) {
   var str = String(this._lines[k]);
-  var pos = str.indexOf(this.REM);
+  var pos = str.indexOf(this._REM);
   if (pos > 1) {
     str = str.substr(0, pos);
   }
-  res = str.split(this.DELIMITER);
+  res = str.split(this._DELIMITER);
   //log("exppressions: " + res.length);
   return res;
 };
@@ -242,7 +245,14 @@ kbasic.prototype.interpreter = function(begin, end) {
       }
       if (t[0].getText() == "IF") {
         var res = vm.functions["IF"](t);
-        alert("res:" + res);
+        if (res == false) {
+          for (var i = 0; i < length; ++i) {
+            t = this._tokensLine[++k];
+            if (t[0].getType == this._ENDL) {
+              break;
+            }
+          }
+        }
         continue;
       }
     }
@@ -256,8 +266,8 @@ kbasic.prototype.interpreter = function(begin, end) {
 
 kbasic.prototype.Subroutine = function(start, name) {
   var pEnd = this._tokensLine.length;
-  var begin = 0,
-    end = 0;
+  var begin = 0;
+  var end = 0;
   for (var k = start; k < pEnd; ++k) {
     var t = this._tokensLine[k];
     var length = t.length;
