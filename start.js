@@ -8,21 +8,40 @@ function VirtualMachine() {
   };
   this.functions["ASSIGNMENT"] = function(tok) {
     tok.mode = 0;
-    var r = vm.EvalExpression(tok);
-    eval(r);
+    vm.EvalExpression(tok);
+  };
+  this.functions["IF"] = function(tok) {
+    tok.mode = "if";
+    return vm.EvalExpression(tok);
   };
 }
 
 VirtualMachine.prototype.EvalExpression = function(tok) {
+  var s = "";
   var mode = tok.mode;
   if (mode == 1 || mode == 0) {
-    var s = "";
     var start = mode;
     for (var k = start; k < tok.length; ++k) {
       s += tok[k].getText();
     }
+  }
+  if (mode == "if") {
+    s = "(";
+    for (var k = 1; k < tok.length; ++k) {
+      var x = tok[k].getText();
+      if (x == "=") x = "==";
+      s += x;
+    }
+    s += ")";
+  }
+  if (Is.good(s)) {
     log("expr: " + s);
-    return eval(s);
+    try {
+      return eval(s);
+    } catch (e) {
+      log.e;
+      return null;
+    }
   }
 };
 
@@ -105,6 +124,9 @@ var Is = {
 
   alnum: function(c) {
     return this.alpha(c) || this.digit(c);
+  },
+  good: function(str) {
+    return str != 0 && str.length > 0;
   }
 };
 
@@ -216,6 +238,11 @@ kbasic.prototype.interpreter = function(begin, end) {
       }
       if (t[0].getText() == "GPS") {
         this.Subroutine(k, t[1].text);
+        continue;
+      }
+      if (t[0].getText() == "IF") {
+        var res = vm.functions["IF"](t);
+        alert("res:" + res);
         continue;
       }
     }
