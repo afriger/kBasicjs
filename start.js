@@ -1,20 +1,30 @@
 function VirtualMachine() {
   this.functions = new Array();
   this.functions["PRINT"] = function(tok) {
-    //var str = ("vm.A"+'='+ "7");
-    //eval(str);
-    var s = "vm." + tok[1].text;
-    var r = eval(s);
-    alert(r);
-    //gOutputObj.value +=  + "\n";
+    tok.mode = 1;
+    var r = vm.EvalExpression(tok);
+    log("Eval:" + r);
+    gOutputObj.value += r + "\n";
   };
   this.functions["ASSIGNMENT"] = function(tok) {
-    var str = "vm." + tok[0].text + "=" + tok[2].text;
-    eval(str);
+    tok.mode = 0;
+    var r =  vm.EvalExpression(tok);
+    eval(r);
   };
 }
 
-VirtualMachine.prototype.EvalExpression = function(toks) {};
+VirtualMachine.prototype.EvalExpression = function(tok) {
+  var mode = tok.mode;
+  if (mode == 1 || mode == 0) {
+    var s = "";
+    var start = mode;
+    for (var k = start; k < tok.length; ++k) {
+      s += tok[k].getText();
+    }
+    log("expr: "+ s); 
+    return eval(s);
+  }
+};
 
 var vm = new VirtualMachine();
 
@@ -160,8 +170,6 @@ function Start() {
   var program = new kbasic(gSourceObj.value);
   for (var i = 0; i < program._countLines; ++i) {
     var expressions = program.expressionsOnLine(i);
-    //log("[" + i + "]" + expressions);
-
     for (var k = 0; k < expressions.length; ++k) {
       program.tokenize(expressions[k]);
       var t = program._tokens;
@@ -169,6 +177,10 @@ function Start() {
       //log("[" + k + "]" + t.toString());
       program._tokens = [];
     }
+    program._tokensLine[program._tokensLine.length] = new Token(
+      program.ENDL,
+      program.ENDL
+    );
   }
 
   program.interpreter();
@@ -181,6 +193,7 @@ function kbasic(source /*string*/) {
   //Constant
   this.REM = ";";
   this.DELIMITER = ",";
+  this.ENDL = "ENDL";
   this._tokensLine = new Array();
   this._tokens = new Array();
   this.addToken = function(t) {
@@ -198,15 +211,16 @@ kbasic.prototype.expressionsOnLine = function(k) {
     str = str.substr(0, pos);
   }
   res = str.split(this.DELIMITER);
-  log("exppressions: " + res.length);
+  //log("exppressions: " + res.length);
   return res;
 };
 kbasic.prototype.interpreter = function() {
   for (var k = 0; k < this._tokensLine.length; ++k) {
     var t = this._tokensLine[k];
+    log("tok:" + t);
     for (var i = 0; i < t.length; ++i) {
-      log("(" + k + "," + i + ") t " + t[i].text);
-      if (t[i].text == "PRINT") vm.functions[t[0].text](t);
+      log("(" + k + "," + i + ") t " + t[i].getText() + " : " + t[i].getType());
+      if (t[i].text == "PRINT") vm.functions["PRINT"](t);
       if (t[i].text == "=") vm.functions["ASSIGNMENT"](t);
     }
   }
