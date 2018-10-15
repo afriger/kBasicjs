@@ -223,6 +223,7 @@ kbasic.prototype.expressionsOnLine = function(k) {
   //log("exppressions: " + res.length);
   return res;
 };
+
 kbasic.prototype.interpreter = function(begin, end) {
   var start = begin ? begin : 0;
   var finish = end ? end : this._tokensLine.length;
@@ -241,6 +242,10 @@ kbasic.prototype.interpreter = function(begin, end) {
       }
       if (t[0].getText() == "GPS") {
         this.Subroutine(k, t[1].text);
+        continue;
+      }
+      if (t[0].getText() == "FOR") {
+        
         continue;
       }
       if (t[0].getText() == "IF") {
@@ -265,6 +270,33 @@ kbasic.prototype.interpreter = function(begin, end) {
 };
 
 kbasic.prototype.Subroutine = function(start, name) {
+  var pEnd = this._tokensLine.length;
+  var begin = 0;
+  var end = 0;
+  for (var k = start; k < pEnd; ++k) {
+    var t = this._tokensLine[k];
+    var length = t.length;
+    if (length && length > 0) {
+      if (t[0].getType() == "KEYWORD" && t[0].getText() == "PS") {
+        if (t[1].text == name) {
+          begin = k;
+        }
+      }
+      if (t[0].getType() == "KEYWORD" && t[0].getText() == "RPS") {
+        if (t[1].text == name) {
+          end = k;
+          alert("PS: " + begin + ":" + end);
+        }
+        break;
+      }
+    }
+  }
+  if (begin > 0 && end < pEnd) {
+    this.interpreter(begin, end);
+  }
+};
+
+kbasic.prototype.Loopfor = function (start, name) {
   var pEnd = this._tokensLine.length;
   var begin = 0;
   var end = 0;
