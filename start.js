@@ -132,6 +132,12 @@ var Is = {
   },
   good: function(str) {
     return str != 0 && str.length > 0;
+  },
+  tokensArr: function(t) {
+    if (t) {
+      return t.length > 0;
+    }
+    return false;
   }
 };
 
@@ -153,6 +159,12 @@ function Token(text, type) {
       return "vm." + this.text;
     }
     return this.text;
+  };
+  this.getKeywordText = function() {
+    if (this.type == "KEYWORD") {
+      return this.text;
+    }
+    return null;
   };
 }
 
@@ -245,7 +257,7 @@ kbasic.prototype.interpreter = function(begin, end) {
         continue;
       }
       if (t[0].getText() == "FOR") {
-        
+        k += this.Loopfor(k);
         continue;
       }
       if (t[0].getText() == "IF") {
@@ -296,29 +308,44 @@ kbasic.prototype.Subroutine = function(start, name) {
   }
 };
 
-kbasic.prototype.Loopfor = function (start, name) {
+kbasic.prototype.Loopfor = function(start) {
+  var f = this._tokensLine[start++];
+  var flen = f.length;
+  if (flen < 6) {
+    return 0;
+  }
+  var name = f[1].text;
+  var from = 0;
+  var to = 0;
+  if (f[2].getKeywordText() == "FROM") {
+    from = f[3].getText();
+  }
+  if (f[4].getKeywordText() == "TO") {
+    to = f[5].getText();
+  }
+  //  alert(flen + ":" + name + ":" + from + ":" + to);
   var pEnd = this._tokensLine.length;
-  var begin = 0;
+  var begin = start;
   var end = 0;
   for (var k = start; k < pEnd; ++k) {
     var t = this._tokensLine[k];
-    var length = t.length;
-    if (length && length > 0) {
-      if (t[0].getType() == "KEYWORD" && t[0].getText() == "PS") {
-        if (t[1].text == name) {
-          begin = k;
-        }
-      }
-      if (t[0].getType() == "KEYWORD" && t[0].getText() == "RPS") {
+    //log("tt: " + t + " : " + k);
+    if (Is.tokensArr(t)) {
+      if (t[0].getType() == "KEYWORD" && t[0].getText() == "NEXT") {
         if (t[1].text == name) {
           end = k;
-          alert("PS: " + begin + ":" + end);
+          alert("NEXT: " + begin + ":" + end);
         }
         break;
       }
     }
   }
-  if (begin > 0 && end < pEnd) {
-    this.interpreter(begin, end);
+  for (var i = from; i < to; ++i) {
+    var s = f[1].getText() +"="+i;
+    eval(s);
+    if (begin > 0 && end < pEnd) {
+      this.interpreter(begin, end);
+    }
   }
+  return end;
 };
