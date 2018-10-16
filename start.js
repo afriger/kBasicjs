@@ -11,9 +11,23 @@ function VirtualMachine() {
   };
   this.functions["IF"] = function(tok) {
     tok.mode = "if";
-    return vm.EvalExpression(tok);
+    var res = vm.EvalExpression(tok);
+    if (res == undefined || res == null) {
+      return false;
+    }
+    return res;
   };
-}
+  this.functions["INCHES"] = function(t) {
+    vm.INCHES = true;
+  };
+  this.functions["SYS"] = function(t) {};
+  this.functions["TKO"] = function(t) {
+    vm.TKO = true;
+  };
+  this.functions["SPO"] = function(t) {};
+  this.functions["NRESX"] = function(t) {};
+  this.functions["DEF"] = function(t) {};
+} //VirtualMachine
 
 VirtualMachine.prototype.EvalExpression = function(tok) {
   var s = "";
@@ -55,7 +69,6 @@ var vm = new VirtualMachine();
 var gSourceObj = null;
 var gDebugObj = null;
 var gOutputObj = null;
-var regexIdentifier = /^([A-Za-z][A-Za-z0-9]?)[A-Za-z0-9]*(\$|%)?/;
 var regexFunctions = new RegExp(
   [
     "^(VAL|STR$|LEFT$|RIGHT$|MID$|LEN|RND|INT",
@@ -69,7 +82,7 @@ var regexKeywords = new RegExp(
     "^(IF|THEN|ELSE|FOR|TO|STEP|GOTO|GOSUB|RETURN|NEXT|INPUT",
     "|LET|CLS|END|PRINT|DIM|DATA|READ|END|OR|AND|MOD|WHILE",
     "|WEND|RANDOMIZE|SYSTEM|KEY|CLEAR|FROM|STOP",
-    "|INCHES|TKO|SMW|ADF|MS|SPO|NRESX|OHM",
+    "|INCHES|TKO|SMW|ADF|MS|SPO|NRESX|OHM|SYS",
     "|BSIZE|QRATE|DPIN|HP4|HP5|HP6|HP4",
     "|HP5|HP6|DEF|PT||ST|SET|RPS|PF|PR|PPOS|GPS|XV|YV|FT",
     "|GPS|PS|RPS)$"
@@ -171,6 +184,16 @@ function Token(text, type) {
     }
     return null;
   };
+  this.isKeyword = function(kw, t) {
+    if (this.type == "KEYWORD") {
+      if (this.text == kw) {
+        var name = new String(kw);
+        vm.functions[name](t);
+        return true;
+      }
+      return false;
+    }
+  };
 }
 
 var log = function(msg) {
@@ -194,6 +217,9 @@ function ini(sourceObj) {
   }
 }
 function Start() {
+  // var s = "vm.A||vm.B";
+  // var r = eval(s);
+  // alert(r)
   var program = new kbasic(gSourceObj.value);
   for (var i = 0; i < program._countLines; ++i) {
     var expressions = program.expressionsOnLine(i);
@@ -273,8 +299,25 @@ kbasic.prototype.interpreter = function(begin, end) {
       }
       continue;
     }
-    if (t[0].getKeywordText() == "PRINT") {
-      vm.functions["PRINT"](t);
+    if (t[0].isKeyword("PRINT", t)) {
+      continue;
+    }
+    if (t[0].isKeyword("INCHES", t)) {
+      continue;
+    }
+    if (t[0].isKeyword("SYS", t)) {
+      continue;
+    }
+    if (t[0].isKeyword("TKO", t)) {
+      continue;
+    }
+    if (t[0].isKeyword("SPO", t)) {
+      continue;
+    }
+    if (t[0].isKeyword("NRESX", t)) {
+      continue;
+    }
+    if (t[0].isKeyword("DEF", t)) {
       continue;
     }
 
