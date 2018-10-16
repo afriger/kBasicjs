@@ -232,7 +232,6 @@ kbasic.prototype.expressionsOnLine = function(k) {
     str = str.substr(0, pos);
   }
   res = str.split(this._DELIMITER);
-  //log("exppressions: " + res.length);
   return res;
 };
 
@@ -247,35 +246,36 @@ kbasic.prototype.interpreter = function(begin, end) {
       continue;
     }
     //log("tok:" + t + ":" + k);
-    if (t[0].getType() == "KEYWORD") {
-      if (t[0].getText() == "STOP") {
-        log("End of program");
-        break;
-      }
-      if (t[0].getText() == "GPS") {
-        this.Subroutine(k, t[1].text);
-        continue;
-      }
-      if (t[0].getText() == "FOR") {
-        k += this.Loopfor(k);
-        continue;
-      }
-      if (t[0].getText() == "IF") {
-        var res = vm.functions["IF"](t);
-        if (res == false) {
-          for (var i = 0; i < length; ++i) {
-            t = this._tokensLine[++k];
-            if (t[0].getType == this._ENDL) {
-              break;
-            }
+    if (t[0].getKeywordText() == "STOP") {
+      log("End of program");
+      break;
+    }
+    if (t[0].getKeywordText() == "GPS") {
+      this.Subroutine(k, t[1].text);
+      continue;
+    }
+    if (t[0].getKeywordText() == "FOR") {
+      k = this.Loopfor(k) + 1;
+      continue;
+    }
+    if (t[0].getText() == "IF") {
+      var res = vm.functions["IF"](t);
+      if (res == false) {
+        for (var i = 0; i < length; ++i) {
+          t = this._tokensLine[++k];
+          if (t[0].getType == this._ENDL) {
+            break;
           }
         }
-        continue;
       }
+      continue;
     }
+    if (t[0].getKeywordText() == "PRINT") {
+      vm.functions["PRINT"](t);
+      continue;
+    }
+
     for (var i = 0; i < length; ++i) {
-      log("(" + k + "," + i + ") t " + t[i].getText() + " : " + t[i].getType());
-      if (t[i].text == "PRINT") vm.functions["PRINT"](t);
       if (t[i].text == "=") vm.functions["ASSIGNMENT"](t);
     }
   }
@@ -331,17 +331,16 @@ kbasic.prototype.Loopfor = function(start) {
     var t = this._tokensLine[k];
     //log("tt: " + t + " : " + k);
     if (Is.tokensArr(t)) {
-      if (t[0].getType() == "KEYWORD" && t[0].getText() == "NEXT") {
+      if (t[0].getKeywordText() == "NEXT") {
         if (t[1].text == name) {
           end = k;
-          alert("NEXT: " + begin + ":" + end);
         }
         break;
       }
     }
   }
   for (var i = from; i < to; ++i) {
-    var s = f[1].getText() +"="+i;
+    var s = f[1].getText() + "=" + i;
     eval(s);
     if (begin > 0 && end < pEnd) {
       this.interpreter(begin, end);
