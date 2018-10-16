@@ -63,7 +63,7 @@ var regexKeywords = new RegExp(
   [
     "^(IF|THEN|ELSE|FOR|TO|STEP|GOTO|GOSUB|RETURN|NEXT|INPUT",
     "|LET|CLS|END|PRINT|DIM|DATA|READ|END|OR|AND|MOD|WHILE",
-    "|WEND|RANDOMIZE|SYSTEM|KEY|CLEAR|STOP",
+    "|WEND|RANDOMIZE|SYSTEM|KEY|CLEAR|FROM|STOP",
     "|INCHES|TKO|SMW|ADF|MS|SPO|NRESX|OHM",
     "|BSIZE|QRATE|DPIN|HP4|HP5|HP6|HP4",
     "|HP5|HP6|DEF|PT||ST|SET|RPS|PF|PR|PPOS|GPS|XV|YV|FT",
@@ -323,13 +323,13 @@ kbasic.prototype.Loopfor = function(start) {
   if (f[4].getKeywordText() == "TO") {
     to = f[5].getText();
   }
-  //  alert(flen + ":" + name + ":" + from + ":" + to);
+  
   var pEnd = this._tokensLine.length;
   var begin = start;
   var end = 0;
   for (var k = start; k < pEnd; ++k) {
     var t = this._tokensLine[k];
-    //log("tt: " + t + " : " + k);
+    
     if (Is.tokensArr(t)) {
       if (t[0].getKeywordText() == "NEXT") {
         if (t[1].text == name) {
