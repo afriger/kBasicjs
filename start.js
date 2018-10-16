@@ -184,7 +184,6 @@ function Erase() {
   }
 }
 
-function test() {}
 
 function ini(sourceObj) {
   gOutputObj = document.getElementById("output");
@@ -307,16 +306,16 @@ kbasic.prototype.Subroutine = function(start, name) {
       }
     }
   }
-  if (begin > 0 && end < pEnd) {
+  if (begin > 0 && end!=0 && end < pEnd) {
     this.interpreter(begin, end);
-  }
+  }else{alert("Err: Sub not found.");}
 };
 
 kbasic.prototype.Loopfor = function(start) {
   var f = this._tokensLine[start++];
   var flen = f.length;
   if (flen < 6) {
-    return 0;
+    return start;
   }
   var name = f[1].text;
   var from = 0;

@@ -244,7 +244,13 @@ kbasic.prototype.tokenize = function(input /*line*/) {
       this.addToken(t);
       continue;
     }
-
+    if(c==":")
+    {
+        i++;
+        var t = new Token("&&","LOGICAL_OPERATOR");
+        this.addToken(t);
+        continue;
+    }
     var t = new Token(c, "CHARACTER");
     this.addToken(t);
     i++;
