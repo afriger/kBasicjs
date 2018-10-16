@@ -3,7 +3,6 @@ function VirtualMachine() {
   this.functions["PRINT"] = function(tok) {
     tok.mode = 1;
     var r = vm.EvalExpression(tok);
-    log("Eval:" + r);
     gOutputObj.value += r + "\n";
   };
   this.functions["ASSIGNMENT"] = function(tok) {
@@ -18,13 +17,14 @@ function VirtualMachine() {
 
 VirtualMachine.prototype.EvalExpression = function(tok) {
   var s = "";
+  var ret = null;
   var mode = tok.mode;
   if (mode == 1 || mode == 0) {
     var start = mode;
     for (var k = start; k < tok.length; ++k) {
       var x = tok[k].getText();
       if (tok[k].getType() == "STRING") {
-        x = "'"+ new String(x)+"'";
+        x = "'" + new String(x) + "'";
       }
       s += x;
     }
@@ -39,14 +39,15 @@ VirtualMachine.prototype.EvalExpression = function(tok) {
     s += ")";
   }
   if (Is.good(s)) {
-    //    log("expr: " + s);
     try {
-      return eval(s);
+      ret = eval(s);
     } catch (e) {
       log.e;
-      return null;
+      ret = null;
     }
   }
+  log("expr: " + s + "; res: " + ret);
+  return ret;
 };
 
 var vm = new VirtualMachine();
@@ -184,7 +185,6 @@ function Erase() {
   }
 }
 
-
 function ini(sourceObj) {
   gOutputObj = document.getElementById("output");
   gDebugObj = document.getElementById("consol");
@@ -306,9 +306,11 @@ kbasic.prototype.Subroutine = function(start, name) {
       }
     }
   }
-  if (begin > 0 && end!=0 && end < pEnd) {
+  if (begin > 0 && end != 0 && end < pEnd) {
     this.interpreter(begin, end);
-  }else{alert("Err: Sub not found.");}
+  } else {
+    alert("Err: Sub not found.");
+  }
 };
 
 kbasic.prototype.Loopfor = function(start) {

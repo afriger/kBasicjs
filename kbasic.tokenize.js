@@ -70,9 +70,16 @@ kbasic.prototype.tokenize = function(input /*line*/) {
 
       var t = new Token(number, "NUMBER");
       this.addToken(t);
+
       continue;
     }
     if (c == "&") {
+      if (next == "&") {
+        i += 2;
+        var t = new Token("&&", "LOGICAL_OPERATOR");
+        this.addToken(t);
+        continue;
+      }
       var base = 8;
       var start = i + 1;
       if (next.toUpperCase() == "H") {
@@ -113,8 +120,10 @@ kbasic.prototype.tokenize = function(input /*line*/) {
       r = identifier.match(regexKeywords);
       if (r && r[0]) {
         var n = identifier.toUpperCase();
-        if (n === "OR" || n === "AND") {
-          t = new Token(n, "LOGICAL_OPERATOR");
+        if (n === "OR") {
+          t = new Token("||", "LOGICAL_OPERATOR");
+        } else if (n === "AND") {
+          t = new Token("&&", "LOGICAL_OPERATOR");
         } else if (n === "MOD") {
           t = new Token(n, "MULT_OPERATOR");
         } else {
@@ -223,7 +232,7 @@ kbasic.prototype.tokenize = function(input /*line*/) {
       i++;
       if (c == "<" && next == ">") {
         i++;
-        t = new Token("<>", "RELATIONAL");
+        t = new Token("!=", "RELATIONAL");
       } else {
         if (next == "=") {
           i++;
@@ -244,14 +253,19 @@ kbasic.prototype.tokenize = function(input /*line*/) {
       this.addToken(t);
       continue;
     }
-    if(c==":")
-    {
-        i++;
-        var t = new Token("&&","LOGICAL_OPERATOR");
+    if (c == ":") {
+      i++;
+      var t = new Token("&&", "LOGICAL_OPERATOR");
+      this.addToken(t);
+      continue;
+    }
+    if (c == "|" && next == "|") {
+        i+=2;
+        var t = new Token("||", "LOGICAL_OPERATOR");
         this.addToken(t);
         continue;
-    }
-    var t = new Token(c, "CHARACTER");
+      }
+      var t = new Token(c, "CHARACTER");
     this.addToken(t);
     i++;
   } //while main
