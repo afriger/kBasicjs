@@ -22,7 +22,11 @@ VirtualMachine.prototype.EvalExpression = function(tok) {
   if (mode == 1 || mode == 0) {
     var start = mode;
     for (var k = start; k < tok.length; ++k) {
-      s += tok[k].getText();
+      var x = tok[k].getText();
+      if (tok[k].getType() == "STRING") {
+        x = "'"+ new String(x)+"'";
+      }
+      s += x;
     }
   }
   if (mode == "if") {
@@ -35,7 +39,7 @@ VirtualMachine.prototype.EvalExpression = function(tok) {
     s += ")";
   }
   if (Is.good(s)) {
-    log("expr: " + s);
+    //    log("expr: " + s);
     try {
       return eval(s);
     } catch (e) {
@@ -245,7 +249,7 @@ kbasic.prototype.interpreter = function(begin, end) {
     if (!(length && length > 0)) {
       continue;
     }
-    //log("tok:" + t + ":" + k);
+    log("tok:" + t + ":" + k);
     if (t[0].getKeywordText() == "STOP") {
       log("End of program");
       break;
@@ -323,13 +327,13 @@ kbasic.prototype.Loopfor = function(start) {
   if (f[4].getKeywordText() == "TO") {
     to = f[5].getText();
   }
-  
+
   var pEnd = this._tokensLine.length;
   var begin = start;
   var end = 0;
   for (var k = start; k < pEnd; ++k) {
     var t = this._tokensLine[k];
-    
+
     if (Is.tokensArr(t)) {
       if (t[0].getKeywordText() == "NEXT") {
         if (t[1].text == name) {
